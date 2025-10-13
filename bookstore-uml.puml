@@ -1,0 +1,283 @@
+@startuml bookstore-class-diagram
+!theme plain
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #FEFEFE
+skinparam headerFontSize 18
+skinparam headerFontStyle bold
+
+title Bookstore Lab 2 - Polymorphic System Class Diagram
+
+package "com.university.bookstore.model" #E8F5E9 {
+    abstract class Material {
+        # id: String
+        # title: String
+        # price: double
+        # year: int
+        --
+        + Material(id, title, price, year)
+        + {abstract} getCreator(): String
+        + {abstract} getDisplayInfo(): String
+        + {abstract} getType(): MaterialType
+        + {abstract} getDiscountRate(): double
+        + getId(): String
+        + getTitle(): String
+        + getPrice(): double
+        + getYear(): int
+        + compareTo(other: Material): int
+        + equals(obj: Object): boolean
+        + hashCode(): int
+    }
+    
+    enum MaterialType {
+        BOOK
+        MAGAZINE
+        AUDIO_BOOK
+        VIDEO
+        EBOOK
+    }
+    
+    class PrintedBook extends Material {
+        - isbn: String
+        - author: String
+        - pages: int
+        - publisher: String
+        - hardcover: boolean
+        --
+        + PrintedBook(isbn, title, author, price, year, pages, publisher, hardcover)
+        + getIsbn(): String
+        + getAuthor(): String
+        + getPages(): int
+        + getPublisher(): String
+        + isHardcover(): boolean
+        + estimateReadingTime(wordsPerMinute: int): double
+    }
+    
+    class Magazine extends Material {
+        - issn: String
+        - publisher: String
+        - issueNumber: int
+        - frequency: String
+        - category: String
+        --
+        + Magazine(issn, title, publisher, price, year, issue, frequency, category)
+        + getIssn(): String
+        + getPublisher(): String
+        + getIssueNumber(): int
+        + getFrequency(): String
+        + getCategory(): String
+        + calculateAnnualSubscription(): double
+    }
+    
+    interface Media {
+        + getDuration(): int
+        + getFormat(): String
+        + getFileSize(): double
+        + getQuality(): MediaQuality
+        + isStreamingOnly(): boolean
+    }
+    
+    enum MediaQuality {
+        LOW
+        STANDARD
+        HIGH
+        HD
+        UHD_4K
+        PHYSICAL
+        --
+        - bitrate: int
+        - description: String
+        + getBitrate(): int
+        + getDescription(): String
+        + toString(): String
+    }
+    
+    class AudioBook extends Material implements Media {
+        - isbn: String
+        - author: String
+        - narrator: String
+        - duration: int
+        - format: String
+        - fileSize: double
+        - quality: MediaQuality
+        - language: String
+        - unabridged: boolean
+        --
+        + AudioBook(isbn, title, author, narrator, price, year, duration, format, fileSize, quality, language, unabridged)
+        + getIsbn(): String
+        + getAuthor(): String
+        + getNarrator(): String
+        + getLanguage(): String
+        + isUnabridged(): boolean
+        + calculateListeningSessions(minutesPerDay: int): int
+    }
+    
+    class VideoMaterial extends Material implements Media {
+        - director: String
+        - duration: int
+        - format: String
+        - fileSize: double
+        - quality: MediaQuality
+        - videoType: VideoType
+        - rating: String
+        - cast: List<String>
+        - subtitles: boolean
+        - aspectRatio: String
+        --
+        + VideoMaterial(id, title, director, price, year, duration, format, fileSize, quality, type, rating, cast, subtitles, aspectRatio)
+        + getDirector(): String
+        + getVideoType(): VideoType
+        + getRating(): String
+        + getCast(): List<String>
+        + hasSubtitles(): boolean
+        + getAspectRatio(): String
+        + isFeatureLength(): boolean
+        + getStreamingBandwidth(): double
+    }
+    
+    enum VideoType {
+        MOVIE
+        DOCUMENTARY
+        TV_SHOW
+        EDUCATIONAL
+        SHORT_FILM
+    }
+    
+    class EBook extends Material implements Media {
+        - author: String
+        - fileFormat: String
+        - fileSize: double
+        - drmEnabled: boolean
+        - wordCount: int
+        - quality: MediaQuality
+        --
+        + EBook(id, title, author, price, year, fileFormat, fileSize, drmEnabled, wordCount, quality)
+        + getAuthor(): String
+        + getFileFormat(): String
+        + getFileSize(): double
+        + isDrmEnabled(): boolean
+        + getWordCount(): int
+        + getReadingTimeMinutes(): int
+    }
+    
+    Material <|-- PrintedBook
+    Material <|-- Magazine
+    Material <|-- AudioBook
+    Material <|-- VideoMaterial
+    Material <|-- EBook
+    Material +-- MaterialType
+    Media <|.. AudioBook
+    Media <|.. VideoMaterial
+    Media <|.. EBook
+    Media +-- MediaQuality
+    VideoMaterial +-- VideoType
+}
+
+package "com.university.bookstore.api" #E3F2FD {
+    interface MaterialStore {
+        + addMaterial(material: Material): boolean
+        + removeMaterial(id: String): Optional<Material>
+        + findById(id: String): Optional<Material>
+        + searchByTitle(title: String): List<Material>
+        + searchByCreator(creator: String): List<Material>
+        + getMaterialsByType(type: MaterialType): List<Material>
+        + getMediaMaterials(): List<Media>
+        + filterMaterials(predicate: Predicate<Material>): List<Material>
+        + findRecentMaterials(years: int): List<Material>
+        + findByCreators(creators: String...): List<Material>
+        + findWithPredicate(condition: Predicate<Material>): List<Material>
+        + getSorted(comparator: Comparator<Material>): List<Material>
+        + size(): int
+        + isEmpty(): boolean
+    }
+}
+
+package "com.university.bookstore.impl" #FFF3E0 {
+    class MaterialStoreImpl implements MaterialStore {
+        - inventory: List<Material>
+        - idIndex: Map<String, Material>
+        --
+        + MaterialStoreImpl()
+        + MaterialStoreImpl(initialMaterials: Collection<Material>)
+        + addMaterial(material: Material): boolean
+        + removeMaterial(id: String): Optional<Material>
+        + findById(id: String): Optional<Material>
+        + searchByTitle(title: String): List<Material>
+        + searchByCreator(creator: String): List<Material>
+        + getMaterialsByType(type: MaterialType): List<Material>
+        + getMediaMaterials(): List<Media>
+        + filterMaterials(predicate: Predicate<Material>): List<Material>
+        + findRecentMaterials(years: int): List<Material>
+        + findByCreators(creators: String...): List<Material>
+        + findWithPredicate(condition: Predicate<Material>): List<Material>
+        + getSorted(comparator: Comparator<Material>): List<Material>
+        + size(): int
+        + isEmpty(): boolean
+    }
+}
+
+package "com.university.bookstore.factory" #FCE4EC {
+    class MaterialFactory {
+        + {static} createMaterial(type: String, properties: Map<String, Object>): Material
+        - {static} createPrintedBook(properties: Map<String, Object>): PrintedBook
+        - {static} createMagazine(properties: Map<String, Object>): Magazine
+        - {static} createAudioBook(properties: Map<String, Object>): AudioBook
+        - {static} createVideoMaterial(properties: Map<String, Object>): VideoMaterial
+        - {static} createEBook(properties: Map<String, Object>): EBook
+    }
+}
+
+package "com.university.bookstore.visitor" #E1F5FE {
+    interface MaterialVisitor {
+        + visit(book: PrintedBook): void
+        + visit(magazine: Magazine): void
+        + visit(audioBook: AudioBook): void
+        + visit(video: VideoMaterial): void
+        + visit(ebook: EBook): void
+    }
+    
+    class ShippingCostCalculator implements MaterialVisitor {
+        - totalShippingCost: double
+        --
+        + visit(book: PrintedBook): void
+        + visit(magazine: Magazine): void
+        + visit(audioBook: AudioBook): void
+        + visit(video: VideoMaterial): void
+        + visit(ebook: EBook): void
+        + getTotalShippingCost(): double
+        + reset(): void
+        + calculateShippingCost(material: Material): double
+    }
+}
+
+' Relationships
+MaterialStoreImpl ..> Material : manages
+MaterialStoreImpl ..> Media : manages
+MaterialFactory ..> Material : creates
+ShippingCostCalculator ..> Material : visits
+
+' Notes
+note right of MaterialStoreImpl
+  Polymorphic storage for all
+  types of library materials
+  with enhanced search
+end note
+
+note right of MaterialFactory
+  Factory pattern for
+  creating different
+  material types
+end note
+
+note right of ShippingCostCalculator
+  Visitor pattern for
+  calculating shipping
+  costs by material type
+end note
+
+note bottom of Material
+  Abstract base class for all
+  library materials using
+  inheritance and polymorphism
+end note
+
+@enduml
