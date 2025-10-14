@@ -1,149 +1,119 @@
 package com.university.bookstore.visitor;
 
-import com.university.bookstore.model.AudioBook;
-import com.university.bookstore.model.EBook;
-import com.university.bookstore.model.Magazine;
-import com.university.bookstore.model.Material;
-import com.university.bookstore.model.Media;
-import com.university.bookstore.model.PrintedBook;
-import com.university.bookstore.model.VideoMaterial;
+import com.university.bookstore.model.*;
 
 /**
- * Visitor implementation for calculating shipping costs.
- * Demonstrates the Visitor pattern by providing different shipping
- * cost calculations based on material type.
- * 
- * <p>Shipping costs vary by material type:
- * - Physical items: $0.50 per 100g
- * - Digital items: $0 (instant download)
- * - Magazines: $2 flat rate</p>
- * 
- * @author Navid Mohaghegh
- * @version 2.0
- * @since 2024-09-15
+ * Calculates shipping expenses for various material types using
+ * the Visitor design pattern.
+ *
+ * Each concrete material type defines a unique shipping behavior:
+ * - Physical books and discs: weight-based rate
+ * - Magazines: fixed cost
+ * - Digital items (eBooks, downloads): no cost
+ *
+ * This implementation separates pricing logic from the material classes.
+ *
+ * @author Luxsan
+ * @version 1.0
  */
 public class ShippingCostCalculator implements MaterialVisitor {
-    
-    private static final double PHYSICAL_ITEM_RATE = 0.50; // per 100g
-    private static final double MAGAZINE_FLAT_RATE = 2.00;
-    private static final double DIGITAL_ITEM_RATE = 0.00;
-    
-    private double totalShippingCost = 0.0;
-    
+
+    private static final double RATE_PER_100G = 0.50;
+    private static final double MAGAZINE_RATE = 2.00;
+    private static final double DIGITAL_RATE = 0.00;
+
+    private double totalCost;
+
     /**
-     * Calculates shipping cost for a printed book based on weight.
-     * Assumes average book weight of 500g.
-     * 
-     * @param book the printed book
+     * Visit a printed book and add its shipping charge.
+     * Approximate weight: 500g.
      */
     @Override
     public void visit(PrintedBook book) {
-        // Assume average book weight of 500g
-        double weightInHundredGrams = 5.0;
-        double cost = weightInHundredGrams * PHYSICAL_ITEM_RATE;
-        totalShippingCost += cost;
+        double weightUnits = 5.0; // 500g / 100g
+        totalCost += weightUnits * RATE_PER_100G;
     }
-    
+
     /**
-     * Calculates flat rate shipping cost for magazines.
-     * 
-     * @param magazine the magazine
+     * Visit a magazine — always flat rate.
      */
     @Override
     public void visit(Magazine magazine) {
-        totalShippingCost += MAGAZINE_FLAT_RATE;
+        totalCost += MAGAZINE_RATE;
     }
-    
+
     /**
-     * Calculates shipping cost for audio books.
-     * Physical CDs: weight-based, Digital: free
-     * 
-     * @param audioBook the audio book
+     * Visit an audiobook and add cost depending on format.
+     * CDs incur cost; digital copies do not.
      */
     @Override
     public void visit(AudioBook audioBook) {
         if (audioBook.getQuality() == Media.MediaQuality.PHYSICAL) {
-            // Assume CD weight of 100g
-            double weightInHundredGrams = 1.0;
-            double cost = weightInHundredGrams * PHYSICAL_ITEM_RATE;
-            totalShippingCost += cost;
+            totalCost += 1.0 * RATE_PER_100G; // 100g assumed
         } else {
-            // Digital download - no shipping cost
-            totalShippingCost += DIGITAL_ITEM_RATE;
+            totalCost += DIGITAL_RATE;
         }
     }
-    
+
     /**
-     * Calculates shipping cost for video materials.
-     * Physical DVDs: weight-based, Digital: free
-     * 
-     * @param video the video material
+     * Visit a video material (DVD vs digital download).
      */
     @Override
     public void visit(VideoMaterial video) {
         if (video.getQuality() == Media.MediaQuality.PHYSICAL) {
-            // Assume DVD weight of 150g
-            double weightInHundredGrams = 1.5;
-            double cost = weightInHundredGrams * PHYSICAL_ITEM_RATE;
-            totalShippingCost += cost;
+            totalCost += 1.5 * RATE_PER_100G; // ~150g
         } else {
-            // Digital download - no shipping cost
-            totalShippingCost += DIGITAL_ITEM_RATE;
+            totalCost += DIGITAL_RATE;
         }
     }
-    
+
     /**
-     * Calculates shipping cost for e-books.
-     * E-books are always digital downloads with no shipping cost.
-     * 
-     * @param ebook the e-book
+     * Visit an eBook — shipping not applicable.
      */
     @Override
     public void visit(EBook ebook) {
-        // E-books are always digital - no shipping cost
-        totalShippingCost += DIGITAL_ITEM_RATE;
+        totalCost += DIGITAL_RATE;
     }
-    
+
     /**
-     * Gets the total shipping cost calculated so far.
-     * 
-     * @return the total shipping cost
+     * Return the total accumulated shipping fee.
      */
     public double getTotalShippingCost() {
-        return totalShippingCost;
+        return totalCost;
     }
-    
+
     /**
-     * Resets the shipping cost calculator for a new calculation.
+     * Reset calculator to handle a fresh computation.
      */
     public void reset() {
-        totalShippingCost = 0.0;
+        totalCost = 0.0;
     }
-    
+
     /**
-     * Calculates shipping cost for a single material.
-     * 
-     * @param material the material to calculate shipping for
-     * @return the shipping cost for this material
+     * Utility method for computing the shipping cost of a single material.
+     *
+     * @param material material whose shipping is to be calculated
+     * @return cost associated with this material
      */
     public double calculateShippingCost(Material material) {
         reset();
-        
-        // Use pattern matching or instanceof to determine the correct visit method
-        if (material instanceof PrintedBook) {
-            visit((PrintedBook) material);
-        } else if (material instanceof Magazine) {
-            visit((Magazine) material);
-        } else if (material instanceof AudioBook) {
-            visit((AudioBook) material);
-        } else if (material instanceof VideoMaterial) {
-            visit((VideoMaterial) material);
-        } else if (material instanceof EBook) {
-            visit((EBook) material);
+
+        if (material instanceof PrintedBook pb) {
+            visit(pb);
+        } else if (material instanceof Magazine mag) {
+            visit(mag);
+        } else if (material instanceof AudioBook ab) {
+            visit(ab);
+        } else if (material instanceof VideoMaterial vm) {
+            visit(vm);
+        } else if (material instanceof EBook eb) {
+            visit(eb);
         } else {
-            throw new IllegalArgumentException("Unknown material type: " + material.getClass().getSimpleName());
+            throw new IllegalArgumentException(
+                    "Unsupported material type: " + material.getClass().getSimpleName()
+            );
         }
-        
-        return totalShippingCost;
+
+        return totalCost;
     }
 }

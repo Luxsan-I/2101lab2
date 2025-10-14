@@ -1,359 +1,319 @@
 package com.university.bookstore.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import com.university.bookstore.api.MaterialStore;
+import com.university.bookstore.model.*;
+
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.university.bookstore.api.MaterialStore;
-import com.university.bookstore.model.Magazine;
-import com.university.bookstore.model.Material;
-import com.university.bookstore.model.Media;
-import com.university.bookstore.model.PrintedBook;
-
 /**
- * Implementation of MaterialStore using ArrayList with polymorphic handling.
- * Demonstrates polymorphism, SOLID principles, and defensive programming.
- * 
- * @author Navid Mohaghegh
- * @version 2.0
- * @since 2024-09-15
+ * Custom implementation of MaterialStore backed by an ArrayList.
+ * Provides polymorphic search, filtering, and statistical operations
+ * for all material types in the bookstore inventory.
+ *
+ * Rewritten by Luxsan Indran (based on course Lab 2 guidelines)
  */
 public class MaterialStoreImpl implements MaterialStore {
-    
-    private final List<Material> inventory;
-    private final Map<String, Material> idIndex;
-    
+
+    private final List<Material> materials;
+    private final Map<String, Material> materialIndex;
+
     /**
-     * Creates a new empty material store.
+     * Default constructor — starts with an empty material collection.
      */
     public MaterialStoreImpl() {
-        this.inventory = new ArrayList<>();
-        this.idIndex = new HashMap<>();
+        this.materials = new ArrayList<>();
+        this.materialIndex = new HashMap<>();
     }
-    
+
     /**
-     * Creates a material store with initial materials.
-     * 
-     * @param initialMaterials materials to add initially
+     * Constructs a new store preloaded with a given collection of materials.
+     *
+     * @param initialMaterials the initial materials to add (optional)
      */
     public MaterialStoreImpl(Collection<Material> initialMaterials) {
         this();
         if (initialMaterials != null) {
-            for (Material material : initialMaterials) {
-                addMaterial(material);
-            }
+            initialMaterials.forEach(this::addMaterial);
         }
     }
-    
+
     @Override
     public synchronized boolean addMaterial(Material material) {
-        if (material == null) {
-            throw new NullPointerException("Cannot add null material");
-        }
-        
-        if (idIndex.containsKey(material.getId())) {
+        Objects.requireNonNull(material, "Material cannot be null");
+
+        if (materialIndex.containsKey(material.getId())) {
             return false;
         }
-        
-        inventory.add(material);
-        idIndex.put(material.getId(), material);
+
+        materials.add(material);
+        materialIndex.put(material.getId(), material);
         return true;
     }
-    
+
     @Override
     public synchronized Optional<Material> removeMaterial(String id) {
-        if (id == null) {
+        if (id == null || id.isBlank()) {
             return Optional.empty();
         }
-        
-        Material material = idIndex.remove(id);
-        if (material != null) {
-            inventory.remove(material);
-            return Optional.of(material);
+
+        Material removed = materialIndex.remove(id);
+        if (removed != null) {
+            materials.remove(removed);
+            return Optional.of(removed);
         }
         return Optional.empty();
     }
-    
+
     @Override
     public Optional<Material> findById(String id) {
-        if (id == null) {
+        if (id == null || id.isBlank()) {
             return Optional.empty();
         }
-        return Optional.ofNullable(idIndex.get(id));
+        return Optional.ofNullable(materialIndex.get(id));
     }
-    
+
     @Override
     public List<Material> searchByTitle(String title) {
-        if (title == null || title.trim().isEmpty()) {
-            return new ArrayList<>();
+        if (title == null || title.isBlank()) {
+            return List.of();
         }
-        
-        String searchTerm = title.toLowerCase().trim();
-        return inventory.stream()
-            .filter(m -> m.getTitle().toLowerCase().contains(searchTerm))
-            .collect(Collectors.toList());
+
+        String keyword = title.trim().toLowerCase();
+        return materials.stream()
+                .filter(m -> m.getTitle().toLowerCase().contains(keyword))
+                .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<Material> searchByCreator(String creator) {
-        if (creator == null || creator.trim().isEmpty()) {
-            return new ArrayList<>();
+        if (creator == null || creator.isBlank()) {
+            return List.of();
         }
-        
-        String searchTerm = creator.toLowerCase().trim();
-        return inventory.stream()
-            .filter(m -> m.getCreator().toLowerCase().contains(searchTerm))
-            .collect(Collectors.toList());
+
+        String keyword = creator.trim().toLowerCase();
+        return materials.stream()
+                .filter(m -> m.getCreator().toLowerCase().contains(keyword))
+                .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<Material> getMaterialsByType(Material.MaterialType type) {
         if (type == null) {
-            return new ArrayList<>();
+            return List.of();
         }
-        
-        return inventory.stream()
-            .filter(m -> m.getType() == type)
-            .collect(Collectors.toList());
+
+        return materials.stream()
+                .filter(m -> m.getType() == type)
+                .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<Media> getMediaMaterials() {
-        return inventory.stream()
-            .filter(m -> m instanceof Media)
-            .map(m -> (Media) m)
-            .collect(Collectors.toList());
+        return materials.stream()
+                .filter(Media.class::isInstance)
+                .map(Media.class::cast)
+                .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<Material> filterMaterials(Predicate<Material> predicate) {
-        if (predicate == null) {
-            throw new NullPointerException("Predicate cannot be null");
-        }
-        
-        return inventory.stream()
-            .filter(predicate)
-            .collect(Collectors.toList());
+        Objects.requireNonNull(predicate, "Predicate cannot be null");
+        return materials.stream()
+                .filter(predicate)
+                .collect(Collectors.toList());
     }
-    
+
     @Override
-    public List<Material> getMaterialsByPriceRange(double minPrice, double maxPrice) {
-        if (minPrice < 0 || maxPrice < 0 || minPrice > maxPrice) {
-            return new ArrayList<>();
+    public List<Material> getMaterialsByPriceRange(double min, double max) {
+        if (min < 0 || max < 0 || min > max) {
+            return List.of();
         }
-        
-        return inventory.stream()
-            .filter(m -> m.getPrice() >= minPrice && m.getPrice() <= maxPrice)
-            .collect(Collectors.toList());
+
+        return materials.stream()
+                .filter(m -> m.getPrice() >= min && m.getPrice() <= max)
+                .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<Material> getMaterialsByYear(int year) {
-        return inventory.stream()
-            .filter(m -> m.getYear() == year)
-            .collect(Collectors.toList());
+        return materials.stream()
+                .filter(m -> m.getYear() == year)
+                .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<Material> getAllMaterialsSorted() {
-        List<Material> sorted = new ArrayList<>(inventory);
-        Collections.sort(sorted);
-        return sorted;
+        List<Material> copy = new ArrayList<>(materials);
+        Collections.sort(copy);
+        return copy;
     }
-    
+
     @Override
     public List<Material> getAllMaterials() {
-        return new ArrayList<>(inventory);
+        return new ArrayList<>(materials);
     }
-    
+
     @Override
     public double getTotalInventoryValue() {
-        return inventory.stream()
-            .mapToDouble(Material::getPrice)
-            .sum();
+        return materials.stream()
+                .mapToDouble(Material::getPrice)
+                .sum();
     }
-    
+
     @Override
     public double getTotalDiscountedValue() {
-        return inventory.stream()
-            .mapToDouble(Material::getDiscountedPrice)
-            .sum();
+        return materials.stream()
+                .mapToDouble(Material::getDiscountedPrice)
+                .sum();
     }
-    
+
     @Override
     public InventoryStats getInventoryStats() {
-        if (inventory.isEmpty()) {
+        if (materials.isEmpty()) {
             return new InventoryStats(0, 0, 0, 0, 0, 0);
         }
-        
-        List<Double> prices = inventory.stream()
-            .map(Material::getPrice)
-            .sorted()
-            .collect(Collectors.toList());
-        
-        double averagePrice = prices.stream()
-            .mapToDouble(Double::doubleValue)
-            .average()
-            .orElse(0.0);
-        
-        double medianPrice = prices.size() % 2 == 0
-            ? (prices.get(prices.size() / 2 - 1) + prices.get(prices.size() / 2)) / 2
-            : prices.get(prices.size() / 2);
-        
-        int uniqueTypes = (int) inventory.stream()
-            .map(Material::getType)
-            .distinct()
-            .count();
-        
-        int mediaCount = (int) inventory.stream()
-            .filter(m -> m instanceof Media)
-            .count();
-        
-        int printCount = (int) inventory.stream()
-            .filter(m -> m instanceof PrintedBook || m instanceof Magazine)
-            .count();
-        
+
+        List<Double> prices = materials.stream()
+                .map(Material::getPrice)
+                .sorted()
+                .collect(Collectors.toList());
+
+        double avgPrice = prices.stream().mapToDouble(Double::doubleValue).average().orElse(0);
+        double median = prices.size() % 2 == 0
+                ? (prices.get(prices.size() / 2 - 1) + prices.get(prices.size() / 2)) / 2
+                : prices.get(prices.size() / 2);
+
+        int distinctTypes = (int) materials.stream()
+                .map(Material::getType)
+                .distinct()
+                .count();
+
+        long mediaCount = materials.stream().filter(Media.class::isInstance).count();
+        long printedCount = materials.stream()
+                .filter(m -> m instanceof PrintedBook || m instanceof Magazine)
+                .count();
+
         return new InventoryStats(
-            inventory.size(),
-            averagePrice,
-            medianPrice,
-            uniqueTypes,
-            mediaCount,
-            printCount
+                materials.size(),
+                avgPrice,
+                median,
+                distinctTypes,
+                (int) mediaCount,
+                (int) printedCount
         );
     }
-    
+
     @Override
     public synchronized void clearInventory() {
-        inventory.clear();
-        idIndex.clear();
+        materials.clear();
+        materialIndex.clear();
     }
-    
+
     @Override
     public int size() {
-        return inventory.size();
+        return materials.size();
     }
-    
+
     @Override
     public boolean isEmpty() {
-        return inventory.isEmpty();
+        return materials.isEmpty();
     }
-    
+
     @Override
     public List<Material> findRecentMaterials(int years) {
         if (years < 0) {
-            throw new IllegalArgumentException("Years cannot be negative: " + years);
+            throw new IllegalArgumentException("Years must be non-negative");
         }
-        
+
         int currentYear = java.time.Year.now().getValue();
-        int cutoffYear = currentYear - years;
-        
-        return inventory.stream()
-            .filter(material -> material.getYear() >= cutoffYear)
-            .collect(Collectors.toList());
+        int cutoff = currentYear - years;
+
+        return materials.stream()
+                .filter(m -> m.getYear() >= cutoff)
+                .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<Material> findByCreators(String... creators) {
         if (creators == null || creators.length == 0) {
-            return new ArrayList<>();
+            return List.of();
         }
-        
+
         Set<String> creatorSet = Arrays.stream(creators)
-            .filter(Objects::nonNull)
-            .map(String::trim)
-            .filter(s -> !s.isEmpty())
-            .collect(Collectors.toSet());
-        
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
+
         if (creatorSet.isEmpty()) {
-            return new ArrayList<>();
+            return List.of();
         }
-        
-        return inventory.stream()
-            .filter(material -> creatorSet.contains(material.getCreator()))
-            .collect(Collectors.toList());
+
+        return materials.stream()
+                .filter(m -> creatorSet.contains(m.getCreator()))
+                .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<Material> findWithPredicate(Predicate<Material> condition) {
-        if (condition == null) {
-            throw new NullPointerException("Predicate cannot be null");
-        }
-        
-        return inventory.stream()
-            .filter(condition)
-            .collect(Collectors.toList());
+        Objects.requireNonNull(condition, "Predicate cannot be null");
+        return materials.stream()
+                .filter(condition)
+                .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<Material> getSorted(Comparator<Material> comparator) {
-        if (comparator == null) {
-            throw new NullPointerException("Comparator cannot be null");
-        }
-        
-        return inventory.stream()
-            .sorted(comparator)
-            .collect(Collectors.toList());
+        Objects.requireNonNull(comparator, "Comparator cannot be null");
+        return materials.stream()
+                .sorted(comparator)
+                .collect(Collectors.toList());
     }
-    
+
     /**
-     * Demonstrates polymorphic behavior by getting display info for all materials.
-     * 
-     * @return list of display strings
+     * Returns formatted information for all stored materials.
      */
     public List<String> getAllDisplayInfo() {
-        return inventory.stream()
-            .map(Material::getDisplayInfo)
-            .collect(Collectors.toList());
+        return materials.stream()
+                .map(Material::getDisplayInfo)
+                .collect(Collectors.toList());
     }
-    
+
     /**
-     * Groups materials by type for reporting.
-     * 
-     * @return map of type to materials
+     * Groups materials by their declared type.
      */
     public Map<Material.MaterialType, List<Material>> groupByType() {
-        return inventory.stream()
-            .collect(Collectors.groupingBy(Material::getType));
+        return materials.stream()
+                .collect(Collectors.groupingBy(Material::getType));
     }
-    
+
     /**
-     * Gets materials with active discounts.
-     * 
-     * @return list of discounted materials
+     * Retrieves materials that currently have discounts applied.
      */
     public List<Material> getDiscountedMaterials() {
-        return inventory.stream()
-            .filter(m -> m.getDiscountRate() > 0)
-            .collect(Collectors.toList());
+        return materials.stream()
+                .filter(m -> m.getDiscountRate() > 0)
+                .collect(Collectors.toList());
     }
-    
+
     /**
-     * Calculates total savings from discounts.
-     * 
-     * @return total discount amount
+     * Computes total amount saved from active discounts.
      */
     public double getTotalDiscountAmount() {
-        return inventory.stream()
-            .mapToDouble(m -> m.getPrice() * m.getDiscountRate())
-            .sum();
+        return materials.stream()
+                .mapToDouble(m -> m.getPrice() * m.getDiscountRate())
+                .sum();
     }
-    
+
     @Override
     public String toString() {
-        return String.format("MaterialStore[Size=%d, Types=%d, Value=$%.2f]",
-            size(),
-            groupByType().size(),
-            getTotalInventoryValue());
+        return String.format(
+                "MaterialStoreImpl[Count=%d, Types=%d, TotalValue=$%.2f]",
+                size(),
+                groupByType().size(),
+                getTotalInventoryValue()
+        );
     }
 }
