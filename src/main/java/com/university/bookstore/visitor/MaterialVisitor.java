@@ -13,8 +13,9 @@ import com.university.bookstore.model.VideoMaterial;
  * This interface enables extension of behavior while keeping the
  * Material hierarchy unchanged — a key idea behind the Visitor Pattern.
  *
- * @author Luxsan
- * @version 1.0
+ * @author Luxsan Indran
+ * 221298286
+ * luxsan@my.yorku.ca
  */
 public interface MaterialVisitor {
 

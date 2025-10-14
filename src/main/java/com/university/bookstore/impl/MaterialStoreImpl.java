@@ -12,7 +12,9 @@ import java.util.stream.Collectors;
  * Provides polymorphic search, filtering, and statistical operations
  * for all material types in the bookstore inventory.
  *
- * Rewritten by Luxsan Indran (based on course Lab 2 guidelines)
+ * @author Luxsan Indran
+ * 221298286
+ * luxsan@my.yorku.ca
  */
 public class MaterialStoreImpl implements MaterialStore {
 
