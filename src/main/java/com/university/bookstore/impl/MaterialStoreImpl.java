@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
  * <p>This implementation maintains an internal index for quick lookups
  * and supports polymorphic behavior across material types.
  *
- * @author
  *     Luxsan Indran (221298286)
  *     luxsan@my.yorku.ca
  */
