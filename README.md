@@ -1,3 +1,4 @@
+##Contact
 Luxsan Indran
 221298286
 luxsan@my.yorku.ca
@@ -6,6 +7,7 @@ Ayan Hasan
 221477393
 ayanh@my.yorku.ca
 
+##Reflection Questions
 1. Abstraction Understanding: How does the abstract Material class enforce a contract for its subclasses? What would happen if we made Material a concrete class instead?
   The abstract Material class enforces a contract by defining common attributes and abstract methods that all subclasses must implement. For example, getCreator(), getDisplayInfo(), and getDiscountRate(). This makes sure that every subclass like PrintedBook, EBook, or AudioBook provides its own version of these methods, but still shares the same structure.
   If Material were a concrete class instead, subclasses wouldn’t be required to implement these methods. This would break the consistency and structure, and result in generic implementations for methods such as getDisplayInfo. This would reduce code clarity, increase the risk of errors, and make the system harder to maintain.
