@@ -23,17 +23,16 @@ Using polymorphism means the system can handle all products through a single int
 The Media interface is valuable because it allows classes like AudioBook and EBook to share a common set of behaviours / methods, such as getDuration() and getFileSize() even if they already extend from Material parent class. Using an interface lets these subclasses represent both a type of Material and a type of Media at the same time, since they fall into both categories.
 This demonstrates the Interface Segregation Principle. This means that a class should not be forced to implement methods it doesn’t need. Instead of one big interface with many unrelated methods, it is split into more specific interfaces (like Media). This also means that future media types (eg. podcast) can be added by simply implementing the Media interface, without the need to change existing class hierarchies. This leads to a more efficient and flexible system.
 
-Performance Considerations: What are the performance implications of using ArrayList
+### 7. Performance Considerations: What are the performance implications of using ArrayList
 vs HashMap for the bookstore? When would you choose each?
 
 Arraylist preforms better when when having to search and sort like when we need to sort all the materials by price or search by keyword. Hashmap is better when we have the materialID and just want to find it. In our code we use arraylist for sequential operations and use HasMap for quick access.
 
-SOLIDPrinciples: WhichSOLIDprinciple do you think is most important for maintainable
-code? Provide an example from your implementation.
+### 8. SOLID Principles: Which SOLID principle do you think is most important for maintainable code? Provide an example from your implementation.
 
 The principle we focused on was the Open/Closed principal meaning we were open to extension but closed to modification. In our visitor pattern we didnt have to change any existing model classes like PrintedBook or EBook to add a new feature, such as shipping cost calculation. Instead we add in the new class ShippingCostCalculator which lets us calculate shipping without changing the existing code. This is better for maintainability and scaling.
 
-Code Quality: What makes code ”clean”? Identify three characteristics of clean code
+###9. Code Quality: What makes code ”clean”? Identify three characteristics of clean code
 demonstrated in this lab.
 
 1. All of the method names in the code like findById() or getTotalInventoryValue() clealy show the purpose of the method and don't cause confusion.
