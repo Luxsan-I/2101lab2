@@ -13,7 +13,7 @@ import com.university.bookstore.model.*;
  *
  * This implementation separates pricing logic from the material classes.
  *
- * @author Luxsan Indran
+ * Luxsan Indran
  * 221298286
  * luxsan@my.yorku.ca
  */
