@@ -1,10 +1,10 @@
 ## Contact
-Luxsan Indran
-221298286
+Luxsan Indran,
+221298286,
 luxsan@my.yorku.ca
 
-Ayan Hasan
-221477393
+Ayan Hasan,
+221477393,
 ayanh@my.yorku.ca
 
 ## Reflection Questions
