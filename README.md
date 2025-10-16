@@ -7,6 +7,10 @@ Ayan Hasan,
 221477393,
 ayanh@my.yorku.ca
 
+Abel Berhanu
+221633680
+abelb23@my.yorku.ca
+
 ## Reflection Questions
 ### 1. Abstraction Understanding: How does the abstract Material class enforce a contract for its subclasses? What would happen if we made Material a concrete class instead?
    
@@ -37,3 +41,6 @@ The principle we focused on was the Open/Closed principal meaning we were open t
 2. Defensive programming by checking for invalid inputs like nulls making sure these inputs cant break the program.
 3. Using interfaces like MaterialStore and MaterialVisitor keeps everything modular and flexible
 
+### 10. What was the most challenging concept in this lab? How did you overcome the challenge, and what resources did you use
+
+The most challenging concept in this lab was balancing immutability and validation. Since all fields had to be immutable, it was difficult to balance that while also ensuring that fields were valid; you were forced to ensure validity at construction. In order to overcome this, we used resources provided to us in class as well as outside resources to study how to create an immutable design. Some resources we used for this project were the provided source code so that we could better understand how to apply immutability. We also used external documentation, including Oracle documentation, and JUnit testing allowed us to understand and debug the code we created in this project.
