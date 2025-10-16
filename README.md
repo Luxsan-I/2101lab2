@@ -11,6 +11,10 @@ Abel Berhanu
 221633680
 abelb23@my.yorku.ca
 
+Yuzhe Lin,
+221331327,
+yuzhelin@my.yorku.ca
+
 ## Reflection Questions
 ### 1. Abstraction Understanding: How does the abstract Material class enforce a contract for its subclasses? What would happen if we made Material a concrete class instead?
    
@@ -26,6 +30,18 @@ Using polymorphism means the system can handle all products through a single int
   
 The Media interface is valuable because it allows classes like AudioBook and EBook to share a common set of behaviours / methods, such as getDuration() and getFileSize() even if they already extend from Material parent class. Using an interface lets these subclasses represent both a type of Material and a type of Media at the same time, since they fall into both categories.
 This demonstrates the Interface Segregation Principle. This means that a class should not be forced to implement methods it doesn’t need. Instead of one big interface with many unrelated methods, it is split into more specific interfaces (like Media). This also means that future media types (eg. podcast) can be added by simply implementing the Media interface, without the need to change existing class hierarchies. This leads to a more efficient and flexible system.
+
+### 4. Defensive Programming: Identify three defensive programming techniques used in the codebase. How do they prevent bugs and improve reliability?
+
+Three defensive programming techniques we had used in the codebase are input validation, edge cases testing and throwing errors detection. Input validation checks if arguments are not equal to null to avoid NullPointerException, or it is equal to other unexpected inputs. Edge cases testing checks if the program can run at edge cases. Throwing errors detection uses assertThrows() or assertDoesNotThrow() to check if errors are threw correctly.
+
+### 5. Testing Strategy: Why is it important to test both valid and invalid inputs? Give an example of a boundary condition test from the codebase.
+
+Test both valid arguments and invalid arguments can make sure the implementation worked properly at any expected case, and can verify if the codes implemented the expected logic of the task as well. Testing valid inputs is to test the program’s ability to run at normals cases, and testing invalid cases is to see the program’s ability to handle unexpected cases. In the EBook class, at some boundary conditions, like when the file size is 0 MB or negative, errors should be threw.
+
+### 6. Design Patterns: Which design pattern from the lab do you find most useful? How would you apply it in your own projects?
+
+The most useful design pattern would be stagey pattern here. A Media interface makes different subclass to implement same methods differently. In the future, I would use it in any takes that requires subclasses to implement methods from the mother class differently and need to implement abstract methods from an interface differently.
 
 ### 7. Performance Considerations: What are the performance implications of using ArrayList vs HashMap for the bookstore? When would you choose each?
 
